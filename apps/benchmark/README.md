@@ -127,3 +127,20 @@ Build TVM with LLVM and ROCm enabled. [Help](https://tvm.apache.org/docs/install
 ```bash
 python3 gpu_imagenet_bench.py --model gfx900 --target rocm
 ```
+
+## Vendor Library Comparisons
+
+For comparing TVM performance against vendor libraries like TensorRT, PyTorch, and ONNX Runtime (as referenced in the Pruner paper), see the vendor comparison benchmark suite:
+
+```bash
+cd vendor_comparison/
+python vendor_comparison_suite.py --help
+```
+
+The vendor comparison suite provides:
+- Native vendor library benchmarks (PyTorch, ONNX Runtime, TensorRT)
+- Side-by-side performance comparisons with TVM
+- Paper reproduction guidance
+- Comprehensive documentation
+
+See [`vendor_comparison/README.md`](vendor_comparison/README.md) for detailed usage instructions.
