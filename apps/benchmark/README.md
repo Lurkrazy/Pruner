@@ -18,6 +18,35 @@
 
 # Performance Benchmark
 
+## Quick Start with Docker
+
+For vendor library comparisons (PyTorch, ONNX Runtime, TensorRT vs TVM):
+
+```bash
+# Build and run vendor benchmark container
+./docker/run_vendor_benchmark.sh build
+./docker/run_vendor_benchmark.sh run
+
+# Inside container, run benchmarks
+test-vendors
+run-benchmark pytorch_benchmark.py --network resnet-50 --repeat 100
+```
+
+📋 **See [vendor_comparison/DOCKER_GUIDE.md](vendor_comparison/DOCKER_GUIDE.md) for complete Docker-based reproduction guide.**
+
+## Vendor Library Benchmarks
+
+The `vendor_comparison/` directory contains scripts for comparing TVM performance against vendor libraries:
+
+- **PyTorch**: Native PyTorch model benchmarking
+- **ONNX Runtime**: ONNX Runtime with GPU acceleration
+- **TensorRT**: Native TensorRT engine benchmarking (manual setup required)
+- **Comprehensive**: Side-by-side comparisons and full benchmark suites
+
+📋 **See [vendor_comparison/README.md](vendor_comparison/README.md) for manual setup and detailed usage.**
+
+## TVM-Only Benchmarks
+
 ## Results
 
 See results on wiki page https://github.com/apache/tvm/wiki/Benchmark

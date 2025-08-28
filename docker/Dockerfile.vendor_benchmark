@@ -1,0 +1,103 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Docker image for vendor library benchmark comparisons
+# Includes PyTorch, ONNX Runtime, and TensorRT support for benchmarking
+# against TVM performance
+FROM nvidia/cuda:11.0-cudnn8-devel-ubuntu18.04
+
+# Base scripts
+RUN apt-get update --fix-missing
+
+COPY install/ubuntu_install_core.sh /install/ubuntu_install_core.sh
+RUN bash /install/ubuntu_install_core.sh
+
+COPY install/ubuntu1804_install_python.sh /install/ubuntu1804_install_python.sh
+RUN bash /install/ubuntu1804_install_python.sh
+
+COPY install/ubuntu1804_install_llvm.sh /install/ubuntu1804_install_llvm.sh
+RUN bash /install/ubuntu1804_install_llvm.sh
+
+COPY install/ubuntu_install_python_package.sh /install/ubuntu_install_python_package.sh
+RUN bash /install/ubuntu_install_python_package.sh
+
+# Install ONNX support
+COPY install/ubuntu_install_onnx.sh /install/ubuntu_install_onnx.sh
+RUN bash /install/ubuntu_install_onnx.sh
+
+# Install additional vendor dependencies
+RUN pip3 install \
+    torch==1.8.1+cu111 \
+    torchvision==0.9.1+cu111 \
+    torchaudio==0.8.1 \
+    -f https://download.pytorch.org/whl/torch_stable.html
+
+RUN pip3 install onnxruntime-gpu
+
+# Install PyCUDA for TensorRT support
+RUN pip3 install pycuda
+
+# Install additional packages needed for benchmarks
+RUN pip3 install \
+    psutil \
+    tqdm \
+    matplotlib \
+    Pillow
+
+# Build TVM
+COPY install/install_tvm_gpu.sh /install/install_tvm_gpu.sh
+RUN bash /install/install_tvm_gpu.sh
+
+# Environment variables
+ENV PYTHONPATH=/usr/tvm/python:/usr/tvm/vta/python:${PYTHONPATH}
+ENV PATH=/usr/local/nvidia/bin:${PATH}
+ENV PATH=/usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+
+# Create convenience scripts for running benchmarks
+RUN echo '#!/bin/bash\ncd /workspace/apps/benchmark/vendor_comparison\npython3 test_dependencies.py' > /usr/local/bin/test-vendors && \
+    chmod +x /usr/local/bin/test-vendors
+
+RUN echo '#!/bin/bash\ncd /workspace/apps/benchmark/vendor_comparison\npython3 "$@"' > /usr/local/bin/run-benchmark && \
+    chmod +x /usr/local/bin/run-benchmark
+
+# Add note about TensorRT
+RUN echo "#!/bin/bash\necho 'Note: TensorRT requires manual installation from NVIDIA Developer Portal'\necho 'Download from: https://developer.nvidia.com/tensorrt'\necho 'Extract and set TENSORRT_ROOT environment variable'\necho 'Then run: pip install \$TENSORRT_ROOT/python/tensorrt-*-py3-none-any.whl'\necho ''\necho 'Available vendors without TensorRT:'\npython3 test_dependencies.py" > /usr/local/bin/tensorrt-setup && \
+    chmod +x /usr/local/bin/tensorrt-setup
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command shows usage information
+CMD echo "TVM Vendor Benchmark Comparison Container" && \
+    echo "=========================================" && \
+    echo "" && \
+    echo "Available commands:" && \
+    echo "  test-vendors      - Check which vendor libraries are available" && \
+    echo "  tensorrt-setup    - Instructions for TensorRT setup" && \
+    echo "  run-benchmark     - Run benchmark scripts" && \
+    echo "" && \
+    echo "Examples:" && \
+    echo "  test-vendors" && \
+    echo "  run-benchmark pytorch_benchmark.py --network resnet-50 --repeat 100" && \
+    echo "  run-benchmark tvm_vs_pytorch.py --network resnet-50 --repeat 100" && \
+    echo "  run-benchmark vendor_comparison_suite.py --vendors pytorch,onnxruntime --repeat 100" && \
+    echo "" && \
+    echo "For TensorRT support, run: tensorrt-setup" && \
+    echo "" && \
+    echo "Documentation: /workspace/apps/benchmark/vendor_comparison/README.md" && \
+    /bin/bash

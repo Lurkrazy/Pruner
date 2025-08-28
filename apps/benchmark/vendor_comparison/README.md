@@ -2,6 +2,27 @@
 
 This directory contains benchmark scripts for comparing TVM performance against vendor libraries mentioned in the Pruner paper, including TensorRT, PyTorch, and ONNX Runtime.
 
+## Quick Start with Docker
+
+The easiest way to reproduce all benchmark results is using the provided Docker image:
+
+```bash
+# Build the Docker image
+cd /path/to/tvm
+docker build -f docker/Dockerfile.vendor_benchmark -t tvm-vendor-benchmark .
+
+# Run with GPU support
+docker run --gpus all -it --rm tvm-vendor-benchmark
+
+# Inside container, check available libraries
+test-vendors
+
+# Run benchmarks
+run-benchmark pytorch_benchmark.py --network resnet-50 --repeat 100
+```
+
+📋 **See [DOCKER_GUIDE.md](DOCKER_GUIDE.md) for complete Docker setup and usage instructions.**
+
 ## Available Benchmarks
 
 ### TensorRT Comparison

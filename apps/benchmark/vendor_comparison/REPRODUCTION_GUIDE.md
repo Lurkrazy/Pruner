@@ -2,25 +2,43 @@
 
 This directory provides the benchmark infrastructure needed to reproduce the vendor library performance comparisons mentioned in the Pruner paper. The paper references benchmarks against TensorRT, PyTorch, and other vendor libraries, and these scripts allow you to run those same comparisons on your hardware.
 
-## Quick Start
+## Quick Start with Docker (Recommended)
 
-1. **Check Dependencies**:
-   ```bash
-   cd apps/benchmark/vendor_comparison
-   python test_dependencies.py
-   ```
+The easiest way to reproduce all benchmark results is using Docker:
 
-2. **Run Basic Comparison**:
-   ```bash
-   # Compare TVM vs PyTorch (most commonly available)
-   python tvm_vs_pytorch.py --network resnet-50 --repeat 100
-   ```
+```bash
+# Build and run the container
+./docker/run_vendor_benchmark.sh build
+./docker/run_vendor_benchmark.sh run
 
-3. **Run Comprehensive Comparison**:
-   ```bash
-   # Compare TVM against all available vendor libraries
-   python vendor_comparison_suite.py --network resnet-50 --repeat 100 --vendors pytorch,onnxruntime
-   ```
+# Inside container, check available libraries
+test-vendors
+
+# Run the paper's main comparison
+run-benchmark tvm_vs_pytorch.py --network resnet-50 --repeat 600
+```
+
+📋 **See [DOCKER_GUIDE.md](DOCKER_GUIDE.md) for complete Docker setup instructions.**
+
+## Manual Setup (Alternative)
+
+### Check Dependencies
+```bash
+cd apps/benchmark/vendor_comparison
+python test_dependencies.py
+```
+
+### Run Basic Comparison
+```bash
+# Compare TVM vs PyTorch (most commonly available)
+python tvm_vs_pytorch.py --network resnet-50 --repeat 100
+```
+
+### Run Comprehensive Comparison
+```bash
+# Compare TVM against all available vendor libraries
+python vendor_comparison_suite.py --network resnet-50 --repeat 100 --vendors pytorch,onnxruntime
+```
 
 ## Paper Reproduction Workflow
 
