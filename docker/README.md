@@ -109,3 +109,9 @@ Here are some common use examples to perform CI tasks.
   ```bash
   ./docker/build.sh ci_cpu tests/scripts/task_golang.sh
   ```
+
+- run vendor library benchmarks for performance comparison
+
+  ```bash
+  ./docker/build.sh vendor_benchmark -it bash
+  ```

@@ -246,3 +246,7 @@ scripts/.dataset_cache
 scripts/results.tsv
 scripts/total_latency.tsv
 scripts/benchmark
+
+# Docker-related temporary files
+benchmark_results/
+*.log
